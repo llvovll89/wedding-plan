@@ -38,11 +38,6 @@ function sumPayment(it: PlanItem): number {
     return (it.payment.deposit ?? 0) + (it.payment.balance ?? 0);
 }
 
-function totalsByCategory(items: PlanItem) {
-    // (오타 방지용으로 아래 selector에서만 사용)
-    return items;
-}
-
 type PlanSelectors = {
     total: number;
     byCategory: Record<PlanCategory, number>;
