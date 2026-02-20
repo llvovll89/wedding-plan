@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import type { ReactElement } from "react";
 
 export type NavSection = "features" | "how" | "gallery";
 
@@ -140,7 +141,7 @@ function GalleryContent() {
     );
 }
 
-const SECTION_CONTENT: Record<NavSection, () => JSX.Element> = {
+const SECTION_CONTENT: Record<NavSection, () => ReactElement> = {
     features: FeaturesContent,
     how: HowContent,
     gallery: GalleryContent,
