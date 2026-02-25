@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "./styles/font.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 * {
   font-family: "Pretendard", sans-serif;
 }

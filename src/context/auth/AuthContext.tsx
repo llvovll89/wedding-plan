@@ -7,6 +7,7 @@ import {
     signOut,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 
@@ -27,7 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (u) => {
-            setUser(u);
+            // 이메일 미인증 유저는 로그인 상태로 취급하지 않음 (Google은 emailVerified=true)
+            setUser(u && u.emailVerified ? u : null);
             setLoading(false);
         });
         return () => unsub();
@@ -42,10 +44,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 await signInWithPopup(auth, provider);
             },
             signInWithEmail: async (email: string, password: string) => {
-                await signInWithEmailAndPassword(auth, email, password);
+                const credential = await signInWithEmailAndPassword(auth, email, password);
+                if (!credential.user.emailVerified) {
+                    await signOut(auth);
+                    throw { code: "auth/email-not-verified" };
+                }
             },
             signUpWithEmail: async (email: string, password: string) => {
-                await createUserWithEmailAndPassword(auth, email, password);
+                const credential = await createUserWithEmailAndPassword(auth, email, password);
+                await sendEmailVerification(credential.user);
+                await signOut(auth);
             },
             logout: async () => {
                 await signOut(auth);

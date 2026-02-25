@@ -25,6 +25,9 @@ export interface PlanItem {
     dueDate?: string; // YYYY-MM-DD (일정 연결용)
     payment: PlanItemPayment;
 
+    estimatedCost?: Money; // 예상 비용 (초기 입력)
+    actualCost?: Money;    // 실제 비용 (확정 후 업데이트)
+
     memo?: string;
     link?: string;
 

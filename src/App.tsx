@@ -2,33 +2,40 @@ import { Route, Routes } from "react-router-dom";
 import { routesPath } from "./routes/route";
 import { PlanProvider } from "./context/plan/PlanContext";
 import { AuthProvider } from "./context/auth/AuthContext";
+import { SettingsProvider } from "./context/settings/SettingsContext";
+import { ThemeProvider } from "./context/theme/ThemeContext";
 import { ProtectedRoute } from "./components/routing/ProtectedRoute";
-import { PLAN } from "./routes/route";
+import { PLAN, SETTINGS, CHECKLIST } from "./routes/route";
+
+const PROTECTED_PATHS: string[] = [PLAN, SETTINGS, CHECKLIST]; // Community는 읽기는 공개
 
 function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
-      <PlanProvider>
-        <Routes>
-          {routesPath.map((r) => {
-            const el = <r.component />;
+      <SettingsProvider>
+        <PlanProvider>
+          <Routes>
+            {routesPath.map((r) => {
+              const el = <r.component />;
 
-            // ✅ /plan만 로그인 필요로 처리(원하면 route 정의에 protected 플래그로 확장 가능)
-            if (r.path === PLAN) {
-              return (
-                <Route
-                  key={r.path}
-                  path={r.path}
-                  element={<ProtectedRoute>{el}</ProtectedRoute>}
-                />
-              );
-            }
+              if (PROTECTED_PATHS.includes(r.path)) {
+                return (
+                  <Route
+                    key={r.path}
+                    path={r.path}
+                    element={<ProtectedRoute>{el}</ProtectedRoute>}
+                  />
+                );
+              }
 
-            return <Route key={r.path} path={r.path} element={el} />;
-          })}
-        </Routes>
-      </PlanProvider>
+              return <Route key={r.path} path={r.path} element={el} />;
+            })}
+          </Routes>
+        </PlanProvider>
+      </SettingsProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 
