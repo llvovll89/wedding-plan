@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { LOGIN, PLAN, COMMUNITY } from "../../routes/route";
 import { useAuth } from "../../context/auth/AuthContext";
 import { useTheme } from "../../context/theme/ThemeContext";
+import { useSettings } from "../../context/settings/SettingsContext";
 import { UserMenu } from "../../components/auth/UserMenu";
 import { SampleDataModal } from "../../components/main/SampleDataModal";
 import { NavSectionModal, type NavSection } from "../../components/main/NavSectionModal";
@@ -27,9 +28,40 @@ function MoonIcon() {
 export const Main = () => {
     const { user, loading } = useAuth();
     const { theme, toggleTheme } = useTheme();
+    const { settings } = useSettings();
     const [showSample, setShowSample] = useState(false);
     const [navSection, setNavSection] = useState<NavSection | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // D-day 카운트다운 (로그인 + 결혼식 날짜 설정 시)
+    const [countdown, setCountdown] = useState<{
+        days: number; hours: number; minutes: number; seconds: number;
+    } | null>(null);
+
+    useEffect(() => {
+        if (!user || !settings.weddingDate) {
+            setCountdown(null);
+            return;
+        }
+        function tick() {
+            const target = new Date(settings.weddingDate);
+            target.setHours(0, 0, 0, 0);
+            const diff = target.getTime() - Date.now();
+            if (diff <= 0) {
+                setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+                return;
+            }
+            setCountdown({
+                days: Math.floor(diff / 86400000),
+                hours: Math.floor((diff % 86400000) / 3600000),
+                minutes: Math.floor((diff % 3600000) / 60000),
+                seconds: Math.floor((diff % 60000) / 1000),
+            });
+        }
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [user, settings.weddingDate]);
 
     return (
         <>
@@ -164,6 +196,38 @@ export const Main = () => {
 
                 {/* Hero */}
                 <main>
+                    {/* D-day 카운트다운 배너 */}
+                    {!loading && user && countdown && (
+                        <section className="bg-linear-to-r from-rose-500 to-rose-600 px-4 py-5">
+                            <div className="mx-auto max-w-6xl text-center">
+                                <p className="mb-3 text-sm font-medium text-rose-100">
+                                    {settings.groomName || "신랑"} ♥ {settings.brideName || "신부"} 결혼식까지
+                                </p>
+                                <div className="flex justify-center gap-5 sm:gap-10">
+                                    {([
+                                        { v: countdown.days, l: "일" },
+                                        { v: countdown.hours, l: "시간" },
+                                        { v: countdown.minutes, l: "분" },
+                                        { v: countdown.seconds, l: "초" },
+                                    ] as const).map(({ v, l }) => (
+                                        <div key={l} className="flex flex-col items-center">
+                                            <span className="text-3xl sm:text-5xl font-bold tabular-nums text-white leading-none">
+                                                {String(v).padStart(2, "0")}
+                                            </span>
+                                            <span className="mt-1 text-xs text-rose-200">{l}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Link
+                                    to={PLAN}
+                                    className="mt-4 inline-block text-xs font-medium text-rose-200 hover:text-white transition-colors underline underline-offset-2"
+                                >
+                                    내 플랜 보기 →
+                                </Link>
+                            </div>
+                        </section>
+                    )}
+
                     <section className="relative">
                         <div className="pointer-events-none absolute inset-0 overflow-hidden">
                             <div className="absolute -top-24 left-1/2 h-72 w-xl -translate-x-1/2 rounded-full bg-linear-to-r from-rose-200/60 via-amber-100/60 to-rose-200/60 blur-3xl dark:from-rose-900/20 dark:via-amber-900/10 dark:to-rose-900/20" />

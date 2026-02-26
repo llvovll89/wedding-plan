@@ -4,8 +4,20 @@ import { useAuth } from "../../context/auth/AuthContext";
 import { getPosts, createPost, deletePost } from "../../firebase/communityService";
 import type { CommunityPost } from "../../types/community";
 import { REGIONS } from "../../types/settings";
+import { Select } from "../../components/ui/Select";
+import { DatePicker } from "../../components/ui/DatePicker";
 import { Link } from "react-router-dom";
 import { LOGIN } from "../../routes/route";
+
+function toDisplay(n: number | ""): string {
+    if (n === "") return "";
+    return (n as number).toLocaleString("ko-KR");
+}
+function parseInput(s: string): number | "" {
+    const digits = s.replace(/[^0-9]/g, "");
+    if (!digits) return "";
+    return Number(digits);
+}
 
 function formatKRW(n: number) {
     return `${n.toLocaleString("ko-KR")}원`;
@@ -19,7 +31,7 @@ function formatWeddingDate(d: string) {
     return `${y}년 ${m}월`;
 }
 
-const inputClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:bg-white transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:bg-slate-700";
+const inputClass = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-rose-400/50 dark:focus:ring-rose-400/10";
 
 // ─── 글쓰기 모달 ────────────────────────────────────────────
 function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
@@ -89,23 +101,20 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">결혼 날짜</label>
-                            <input
-                                type="date"
-                                className={inputClass}
+                            <DatePicker
                                 value={weddingDate}
-                                onChange={(e) => setWeddingDate(e.target.value)}
+                                onChange={setWeddingDate}
+                                placeholder="날짜 선택"
                             />
                         </div>
                         <div>
                             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">지역</label>
-                            <select
-                                className={inputClass}
+                            <Select
                                 value={region}
-                                onChange={(e) => setRegion(e.target.value)}
-                            >
-                                <option value="">선택 안 함</option>
-                                {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
-                            </select>
+                                onValueChange={setRegion}
+                                placeholder="선택 안 함"
+                                options={REGIONS.map((r) => ({ value: r, label: r }))}
+                            />
                         </div>
                     </div>
 
@@ -124,12 +133,12 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
                             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">총 비용</label>
                             <div className="relative">
                                 <input
-                                    type="number"
-                                    min={0}
+                                    type="text"
+                                    inputMode="numeric"
                                     placeholder="0"
                                     className={`${inputClass} pr-7`}
-                                    value={totalCost}
-                                    onChange={(e) => setTotalCost(e.target.value === "" ? "" : Number(e.target.value))}
+                                    value={toDisplay(totalCost)}
+                                    onChange={(e) => setTotalCost(parseInput(e.target.value))}
                                 />
                                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500">원</span>
                             </div>

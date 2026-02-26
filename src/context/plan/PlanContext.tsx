@@ -48,7 +48,8 @@ type PlanContextValue = {
     addItem: (input: Omit<PlanItem, "id" | "createdAt" | "updatedAt">) => void;
     updateItem: (id: string, patch: Partial<PlanItem>) => void;
     removeItem: (id: string) => void;
-    clearAll: () => void; // ✅ 추가
+    clearAll: () => void;
+    importPlan: (newState: PlanState) => void;
     selectors: PlanSelectors;
 };
 
@@ -107,7 +108,8 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
             },
             updateItem: (id, patch) => dispatch({ type: "UPDATE_ITEM", id, patch }),
             removeItem: (id) => dispatch({ type: "REMOVE_ITEM", id }),
-            clearAll: () => dispatch({ type: "REPLACE_STATE", state: { items: [] } }), // ✅ 추가
+            clearAll: () => dispatch({ type: "REPLACE_STATE", state: { items: [] } }),
+            importPlan: (newState) => dispatch({ type: "REPLACE_STATE", state: newState }),
         }),
         [state, selectors],
     );

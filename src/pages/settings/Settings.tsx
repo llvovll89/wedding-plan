@@ -1,11 +1,25 @@
 import { useEffect, useState } from "react";
 import { useSettings } from "../../context/settings/SettingsContext";
 import { AppNav } from "../../components/layout/AppNav";
+import { Select } from "../../components/ui/Select";
+import { DatePicker } from "../../components/ui/DatePicker";
 import { REGIONS } from "../../types/settings";
 
 function formatKRW(n: number) {
     return n > 0 ? `${n.toLocaleString("ko-KR")}원` : "";
 }
+
+function toDisplay(n: number | ""): string {
+    if (n === "") return "";
+    return (n as number).toLocaleString("ko-KR");
+}
+
+function parseInput(s: string): number | "" {
+    const digits = s.replace(/[^0-9]/g, "");
+    if (!digits) return "";
+    return Number(digits);
+}
+
 
 function SectionTitle({ icon, title, desc }: { icon: string; title: string; desc: string }) {
     return (
@@ -63,7 +77,7 @@ export const SettingsPage = () => {
         return `결혼식이 ${Math.abs(diff)}일 지났어요`;
     })();
 
-    const inputClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:bg-white transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:bg-slate-700";
+    const inputClass = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-rose-400/50 dark:focus:ring-rose-400/10";
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -109,11 +123,10 @@ export const SettingsPage = () => {
                         {/* 결혼 예정일 */}
                         <div className="mb-3">
                             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">결혼 예정일</label>
-                            <input
-                                type="date"
-                                className={inputClass}
+                            <DatePicker
                                 value={weddingDate}
-                                onChange={(e) => setWeddingDate(e.target.value)}
+                                onChange={setWeddingDate}
+                                placeholder="날짜를 선택해주세요"
                             />
                             {dDayText && (
                                 <p className="mt-1.5 text-xs font-medium text-rose-500 dark:text-rose-400">{dDayText}</p>
@@ -124,27 +137,25 @@ export const SettingsPage = () => {
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">예식 지역</label>
-                                <select
-                                    className={inputClass}
+                                <Select
                                     value={region}
-                                    onChange={(e) => setRegion(e.target.value)}
-                                >
-                                    <option value="">선택 안 함</option>
-                                    {REGIONS.map((r) => (
-                                        <option key={r} value={r}>{r}</option>
-                                    ))}
-                                </select>
+                                    onValueChange={setRegion}
+                                    options={[
+                                        { value: "", label: "선택 안 함" },
+                                        ...REGIONS.map((r) => ({ value: r, label: r })),
+                                    ]}
+                                />
                             </div>
                             <div>
                                 <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">예상 하객 수</label>
                                 <div className="relative">
                                     <input
-                                        type="number"
-                                        min={0}
+                                        type="text"
+                                        inputMode="numeric"
                                         placeholder="200"
                                         className={`${inputClass} pr-8`}
-                                        value={guestCount}
-                                        onChange={(e) => setGuestCount(e.target.value === "" ? "" : Number(e.target.value))}
+                                        value={toDisplay(guestCount)}
+                                        onChange={(e) => setGuestCount(parseInput(e.target.value))}
                                     />
                                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500">명</span>
                                 </div>
@@ -164,12 +175,12 @@ export const SettingsPage = () => {
                             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">결혼 총 예산</label>
                             <div className="relative">
                                 <input
-                                    type="number"
-                                    min={0}
-                                    placeholder="30000000"
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="30,000,000"
                                     className={`${inputClass} pr-8`}
-                                    value={totalBudget}
-                                    onChange={(e) => setTotalBudget(e.target.value === "" ? "" : Number(e.target.value))}
+                                    value={toDisplay(totalBudget)}
+                                    onChange={(e) => setTotalBudget(parseInput(e.target.value))}
                                 />
                                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500">원</span>
                             </div>

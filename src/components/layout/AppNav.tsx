@@ -36,8 +36,15 @@ function CommunityIcon() {
 function SettingsIcon() {
     return (
         <svg className="h-4 w-4 shrink-0" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="2.2" stroke="currentColor" strokeWidth="1.3" />
-            <path d="M8 1.5V3M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.06 1.06M11.54 11.54l1.06 1.06M3.4 12.6l1.06-1.06M11.54 4.46l1.06-1.06" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            {/* Row 1: handle left */}
+            <path d="M2 4h1.4M6.6 4H14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <circle cx="5" cy="4" r="1.7" stroke="currentColor" strokeWidth="1.3" />
+            {/* Row 2: handle right */}
+            <path d="M2 8h7.4M12.6 8H14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <circle cx="11" cy="8" r="1.7" stroke="currentColor" strokeWidth="1.3" />
+            {/* Row 3: handle center */}
+            <path d="M2 12h4.1M9.9 12H14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <circle cx="8" cy="12" r="1.7" stroke="currentColor" strokeWidth="1.3" />
         </svg>
     );
 }
