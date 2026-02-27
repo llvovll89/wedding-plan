@@ -8,6 +8,8 @@ import { AppNav } from "../../components/layout/AppNav";
 import { Select } from "../../components/ui/Select";
 import { SETTINGS } from "../../routes/route";
 import { createShare } from "../../firebase/shareService";
+import { VenueSearchModal } from "../../components/venue/VenueSearchModal";
+import type { Venue } from "../../types/venue";
 
 const CATEGORY_LABEL: Record<PlanCategory, string> = {
     sdeume: "스드메",
@@ -93,6 +95,13 @@ export const Plan = () => {
         setExpandedMemoId(null);
         setEditMemo("");
         setEditLink("");
+    };
+
+    // 예식장 검색 모달
+    const [venueSearchOpen, setVenueSearchOpen] = useState(false);
+
+    const handleVenueSelect = (venue: Venue) => {
+        setName(venue.name);
     };
 
     // 공유 상태
@@ -358,12 +367,23 @@ export const Plan = () => {
                 <div className="mb-3 grid gap-3 sm:grid-cols-3">
                     <div>
                         <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">항목명</label>
-                        <input
-                            className={inputCls}
-                            placeholder="예: 골든로즈 웨딩홀"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
+                        <div className="flex gap-1.5">
+                            <input
+                                className={inputCls}
+                                placeholder="예: 골든로즈 웨딩홀"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                            {category === "venue" && (
+                                <button
+                                    type="button"
+                                    onClick={() => setVenueSearchOpen(true)}
+                                    className="shrink-0 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs font-medium text-rose-600 hover:bg-rose-100 transition-colors dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-300 dark:hover:bg-rose-900/40"
+                                >
+                                    검색
+                                </button>
+                            )}
+                        </div>
                     </div>
                     <div>
                         <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">카테고리</label>
@@ -771,6 +791,14 @@ export const Plan = () => {
                     </div>
                 </div>
             </div>
+        )}
+
+        {/* 예식장 검색 모달 */}
+        {venueSearchOpen && (
+            <VenueSearchModal
+                onSelect={handleVenueSelect}
+                onClose={() => setVenueSearchOpen(false)}
+            />
         )}
         </>
     );
