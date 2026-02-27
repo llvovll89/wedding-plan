@@ -8,6 +8,9 @@ import { AppNav } from "../../components/layout/AppNav";
 import { Select } from "../../components/ui/Select";
 import { SETTINGS } from "../../routes/route";
 import { createShare } from "../../firebase/shareService";
+import { StyleGallery } from "../../components/plan/StyleGallery";
+
+type PlanTab = "plan" | "style";
 
 const CATEGORY_LABEL: Record<PlanCategory, string> = {
     sdeume: "스드메",
@@ -53,6 +56,8 @@ export const Plan = () => {
     const { state, addItem, updateItem, removeItem, selectors, clearAll } = usePlan();
     const { settings } = useSettings();
     const { user } = useAuth();
+
+    const [planTab, setPlanTab] = useState<PlanTab>("plan");
 
     // 폼 상태
     const [name, setName] = useState("");
@@ -257,36 +262,70 @@ export const Plan = () => {
             {/* 헤더 */}
             <div className="mb-5 flex items-center justify-between gap-2">
                 <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">내 플랜</h1>
-                <div className="flex items-center gap-2">
-                    {state.items.length > 0 && (
+                {planTab === "plan" && (
+                    <div className="flex items-center gap-2">
+                        {state.items.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={handlePrint}
+                                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                            >
+                                PDF 저장
+                            </button>
+                        )}
+                        {user && state.items.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleShare}
+                                disabled={shareLoading}
+                                className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition-colors dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                            >
+                                {shareLoading ? "생성 중..." : "공유 링크"}
+                            </button>
+                        )}
                         <button
                             type="button"
-                            onClick={handlePrint}
-                            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                            className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100 disabled:opacity-40 transition-colors dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-300 dark:hover:bg-rose-900/40"
+                            onClick={onReset}
+                            disabled={state.items.length === 0}
                         >
-                            PDF 저장
+                            전체 초기화
                         </button>
-                    )}
-                    {user && state.items.length > 0 && (
-                        <button
-                            type="button"
-                            onClick={handleShare}
-                            disabled={shareLoading}
-                            className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition-colors dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
-                        >
-                            {shareLoading ? "생성 중..." : "공유 링크"}
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100 disabled:opacity-40 transition-colors dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-300 dark:hover:bg-rose-900/40"
-                        onClick={onReset}
-                        disabled={state.items.length === 0}
-                    >
-                        전체 초기화
-                    </button>
-                </div>
+                    </div>
+                )}
             </div>
+
+            {/* 탭 */}
+            <div className="mb-6 flex gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <button
+                    type="button"
+                    onClick={() => setPlanTab("plan")}
+                    className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${
+                        planTab === "plan"
+                            ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                            : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
+                >
+                    견적·일정
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setPlanTab("style")}
+                    className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${
+                        planTab === "style"
+                            ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                            : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
+                >
+                    스타일 레퍼런스
+                </button>
+            </div>
+
+            {/* 스타일 레퍼런스 탭 */}
+            {planTab === "style" && <StyleGallery />}
+
+            {/* 견적·일정 탭 콘텐츠 */}
+            {planTab === "plan" && <>
 
             {/* 예산 바 */}
             {totalBudget > 0 ? (
@@ -722,6 +761,8 @@ export const Plan = () => {
                     })}
                 </div>
             )}
+
+            </>}
             </div>
         </div>
 

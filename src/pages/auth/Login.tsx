@@ -10,12 +10,21 @@ const FIREBASE_ERRORS: Record<string, string> = {
     "auth/wrong-password": "비밀번호가 올바르지 않습니다.",
     "auth/invalid-credential": "이메일 또는 비밀번호가 올바르지 않습니다.",
     "auth/email-already-in-use": "이미 사용 중인 이메일입니다.",
-    "auth/weak-password": "비밀번호는 6자 이상이어야 합니다.",
+    "auth/weak-password": "비밀번호는 8자 이상이어야 합니다.",
     "auth/invalid-email": "올바른 이메일 형식이 아닙니다.",
     "auth/popup-closed-by-user": "로그인 창이 닫혔습니다. 다시 시도해주세요.",
     "auth/cancelled-popup-request": "로그인 요청이 취소됐습니다.",
     "auth/email-not-verified": "이메일 인증이 완료되지 않았습니다. 메일함을 확인해주세요.",
 };
+
+function validatePassword(pw: string): string | null {
+    if (pw.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
+    if (!/[A-Z]/.test(pw)) return "대문자를 1자 이상 포함해야 합니다.";
+    if (!/[a-z]/.test(pw)) return "소문자를 1자 이상 포함해야 합니다.";
+    if (!/[0-9]/.test(pw)) return "숫자를 1자 이상 포함해야 합니다.";
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw)) return "특수문자를 1자 이상 포함해야 합니다.";
+    return null;
+}
 
 function parseError(err: unknown): string {
     if (err && typeof err === "object" && "code" in err) {
@@ -41,6 +50,10 @@ export const Login = () => {
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+        if (mode === "signup") {
+            const pwError = validatePassword(password);
+            if (pwError) { setError(pwError); return; }
+        }
         setIsLoading(true);
         try {
             if (mode === "login") {
@@ -179,9 +192,14 @@ export const Login = () => {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder={mode === "signup" ? "6자 이상 입력해주세요" : "비밀번호 입력"}
+                            placeholder={mode === "signup" ? "8자 이상 입력해주세요" : "비밀번호 입력"}
                             className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
                         />
+                        {mode === "signup" && (
+                            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                                8자 이상 · 대소문자 · 숫자 · 특수문자 포함
+                            </p>
+                        )}
                     </div>
 
                     {/* 에러 메시지 */}
