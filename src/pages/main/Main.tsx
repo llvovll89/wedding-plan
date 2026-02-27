@@ -7,6 +7,7 @@ import { useSettings } from "../../context/settings/SettingsContext";
 import { UserMenu } from "../../components/auth/UserMenu";
 import { SampleDataModal } from "../../components/main/SampleDataModal";
 import { NavSectionModal, type NavSection } from "../../components/main/NavSectionModal";
+import { InAppAssistant } from "../../components/main/InAppAssistant";
 
 function SunIcon() {
     return (
@@ -77,16 +78,6 @@ export const Main = () => {
 
                         {/* 데스크탑 네비 */}
                         <nav className="hidden items-center gap-1 text-sm text-slate-600 md:flex dark:text-slate-400">
-                            {(["features", "how", "gallery"] as NavSection[]).map((s) => (
-                                <button
-                                    key={s}
-                                    type="button"
-                                    className="rounded-xl px-3 py-2 hover:bg-slate-100 hover:text-slate-900 transition-colors dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                                    onClick={() => setNavSection(s)}
-                                >
-                                    {{ features: "기능", how: "사용법", gallery: "무드" }[s]}
-                                </button>
-                            ))}
                             <Link
                                 to={COMMUNITY}
                                 className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-rose-600 hover:bg-rose-50 transition-colors font-medium dark:text-rose-400 dark:hover:bg-rose-900/20"
@@ -154,16 +145,6 @@ export const Main = () => {
                     {mobileMenuOpen && (
                         <div className="border-t border-slate-100 bg-white/95 backdrop-blur md:hidden dark:border-slate-700 dark:bg-slate-900/95">
                             <div className="mx-auto max-w-6xl px-4 py-3 space-y-1">
-                                {(["features", "how", "gallery"] as NavSection[]).map((s) => (
-                                    <button
-                                        key={s}
-                                        type="button"
-                                        onClick={() => { setNavSection(s); setMobileMenuOpen(false); }}
-                                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-800"
-                                    >
-                                        {{ features: "🗂️ 기능", how: "📖 사용법", gallery: "🌸 무드" }[s]}
-                                    </button>
-                                ))}
                                 <Link
                                     to={COMMUNITY}
                                     onClick={() => setMobileMenuOpen(false)}
@@ -564,6 +545,8 @@ export const Main = () => {
                     </footer>
                 </main>
             </div>
+
+            <InAppAssistant onSelect={(s) => setNavSection(s)} />
 
             {showSample && <SampleDataModal onClose={() => setShowSample(false)} />}
             {navSection && <NavSectionModal section={navSection} onClose={() => setNavSection(null)} />}

@@ -1,5 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
+import { useAuth } from "../../context/auth/AuthContext";
+import {
+    uploadMoodImage,
+    loadMoodImages,
+    deleteMoodImage,
+    validateImageFile,
+    type MoodImage,
+} from "../../firebase/moodImageService";
 
 export type NavSection = "features" | "how" | "gallery";
 
@@ -108,7 +116,54 @@ function HowContent() {
 }
 
 function GalleryContent() {
-    const moods = [
+    const { user } = useAuth();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [userImages, setUserImages] = useState<MoodImage[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState("");
+    const [loadingImages, setLoadingImages] = useState(false);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!user) return;
+        setLoadingImages(true);
+        loadMoodImages(user.uid)
+            .then(setUserImages)
+            .finally(() => setLoadingImages(false));
+    }, [user]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+        e.target.value = "";
+
+        const err = validateImageFile(file);
+        if (err) { setUploadError(err); return; }
+
+        setUploadError("");
+        setUploading(true);
+        try {
+            const image = await uploadMoodImage(user.uid, file);
+            setUserImages((prev) => [image, ...prev]);
+        } catch {
+            setUploadError("업로드에 실패했습니다. 다시 시도해주세요.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDelete = async (image: MoodImage) => {
+        if (!user) return;
+        setDeletingId(image.id);
+        try {
+            await deleteMoodImage(user.uid, image.id, image.storagePath);
+            setUserImages((prev) => prev.filter((img) => img.id !== image.id));
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    const presetMoods = [
         { label: "모던 미니멀", color: "from-slate-100 via-white to-slate-50", tag: "#심플 #화이트" },
         { label: "로맨틱 가든", color: "from-rose-100 via-white to-pink-50", tag: "#플라워 #야외" },
         { label: "빈티지 클래식", color: "from-amber-100 via-white to-yellow-50", tag: "#빈티지 #골드" },
@@ -119,23 +174,125 @@ function GalleryContent() {
 
     return (
         <div>
-            <p className="mb-6 text-sm text-slate-500">웨딩 무드 보드입니다. 나중에 이미지 업로드·핀 저장 기능으로 확장될 예정이에요.</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {moods.map((mood) => (
-                    <div key={mood.label} className="overflow-hidden rounded-2xl border border-rose-100/70 bg-white shadow-sm">
-                        <div className={`aspect-[4/3] bg-linear-to-br ${mood.color} flex items-end p-3`}>
-                            <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs text-slate-500 backdrop-blur-sm">
-                                {mood.tag}
-                            </span>
-                        </div>
-                        <div className="px-3 py-2">
-                            <div className="text-sm font-medium text-slate-800">{mood.label}</div>
-                        </div>
+            <p className="mb-4 text-sm text-slate-500">나만의 웨딩 무드 보드를 만들어보세요. 이미지를 업로드해서 영감을 모아두세요.</p>
+
+            {/* 내 이미지 섹션 */}
+            {user ? (
+                <div className="mb-6">
+                    <div className="mb-3 flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-rose-500">내 무드 이미지</span>
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="flex items-center gap-1.5 rounded-full bg-rose-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-600 disabled:opacity-50 transition-colors"
+                        >
+                            {uploading ? (
+                                <>
+                                    <svg className="h-3 w-3 animate-spin" viewBox="0 0 16 16" fill="none">
+                                        <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="10" />
+                                    </svg>
+                                    업로드 중...
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="h-3 w-3" viewBox="0 0 16 16" fill="none">
+                                        <path d="M8 2v8M4 6l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                    </svg>
+                                    이미지 추가
+                                </>
+                            )}
+                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
                     </div>
-                ))}
-            </div>
-            <div className="mt-4 rounded-2xl border border-dashed border-rose-200 bg-rose-50/50 px-4 py-3 text-center text-xs text-rose-600">
-                이미지 업로드 기능은 추후 추가될 예정입니다
+
+                    {uploadError && (
+                        <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                            {uploadError}
+                        </p>
+                    )}
+
+                    {loadingImages ? (
+                        <div className="flex h-16 items-center justify-center text-sm text-slate-400">불러오는 중...</div>
+                    ) : userImages.length === 0 ? (
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-rose-200 bg-rose-50/50 py-5 text-sm text-rose-400 hover:bg-rose-50 hover:border-rose-300 transition-colors dark:border-rose-800 dark:bg-rose-900/10 dark:text-rose-500"
+                        >
+                            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 2v8M4 6l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                            첫 번째 무드 이미지를 업로드해보세요
+                        </button>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            {userImages.map((img) => (
+                                <div key={img.id} className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700">
+                                    <div className="aspect-[4/3] overflow-hidden">
+                                        <img
+                                            src={img.url}
+                                            alt={img.name}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="px-2.5 py-2">
+                                        <p className="truncate text-xs text-slate-600 dark:text-slate-400">{img.name}</p>
+                                    </div>
+                                    {/* 삭제 버튼 */}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDelete(img)}
+                                        disabled={deletingId === img.id}
+                                        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-black/70 transition-all disabled:opacity-50"
+                                        aria-label="이미지 삭제"
+                                    >
+                                        {deletingId === img.id ? (
+                                            <svg className="h-3 w-3 animate-spin" viewBox="0 0 16 16" fill="none">
+                                                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2.5" strokeDasharray="28" strokeDashoffset="10" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="h-3 w-3" viewBox="0 0 16 16" fill="none">
+                                                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="mb-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-800/50">
+                    로그인하면 나만의 무드 이미지를 업로드할 수 있어요
+                </div>
+            )}
+
+            {/* 프리셋 무드 */}
+            <div>
+                <span className="mb-3 block text-xs font-semibold uppercase tracking-widest text-slate-400">무드 레퍼런스</span>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {presetMoods.map((mood) => (
+                        <div key={mood.label} className="overflow-hidden rounded-2xl border border-rose-100/70 bg-white shadow-sm">
+                            <div className={`aspect-[4/3] bg-linear-to-br ${mood.color} flex items-end p-3`}>
+                                <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs text-slate-500 backdrop-blur-sm">
+                                    {mood.tag}
+                                </span>
+                            </div>
+                            <div className="px-3 py-2">
+                                <div className="text-sm font-medium text-slate-800">{mood.label}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
