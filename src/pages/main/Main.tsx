@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { LOGIN, PLAN, COMMUNITY } from "../../routes/route";
+import { LOGIN, PLAN } from "../../routes/route";
 import { useAuth } from "../../context/auth/AuthContext";
 import { useSettings } from "../../context/settings/SettingsContext";
 import { AppNav } from "../../components/layout/AppNav";
@@ -409,8 +409,8 @@ export const Main = () => {
                                 <div className="flex items-center gap-2">
                                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-rose-400 to-amber-300">
                                         <svg className="h-3 w-4 text-white" viewBox="0 0 20 10" fill="none">
-                                            <circle cx="6.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9"/>
-                                            <circle cx="13.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9"/>
+                                            <circle cx="6.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9" />
+                                            <circle cx="13.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9" />
                                         </svg>
                                     </div>
                                     <span className="font-medium text-slate-800 dark:text-slate-200">Wedding Plan</span>
