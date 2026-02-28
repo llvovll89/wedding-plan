@@ -6,11 +6,6 @@ import { useSettings } from "../../context/settings/SettingsContext";
 import { useTheme } from "../../context/theme/ThemeContext";
 import { NavSectionModal, type NavSection } from "../main/NavSectionModal";
 
-const ADMIN_UIDS: string[] = ((import.meta.env.VITE_ADMIN_UIDS as string) ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
 function PlanIcon() {
     return (
         <svg className="h-4 w-4 shrink-0" viewBox="0 0 16 16" fill="none">
