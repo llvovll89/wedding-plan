@@ -1,38 +1,17 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { LOGIN, PLAN, COMMUNITY, CHECKLIST, SETTINGS } from "../../routes/route";
+import { Link } from "react-router-dom";
+import { LOGIN, PLAN, COMMUNITY } from "../../routes/route";
 import { useAuth } from "../../context/auth/AuthContext";
-import { useTheme } from "../../context/theme/ThemeContext";
 import { useSettings } from "../../context/settings/SettingsContext";
-import { UserMenu } from "../../components/auth/UserMenu";
+import { AppNav } from "../../components/layout/AppNav";
 import { SampleDataModal } from "../../components/main/SampleDataModal";
 import { NavSectionModal, type NavSection } from "../../components/main/NavSectionModal";
-import { InAppAssistant } from "../../components/main/InAppAssistant";
-
-function SunIcon() {
-    return (
-        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.3" />
-            <path d="M8 1.5V3M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.06 1.06M11.54 11.54l1.06 1.06M3.4 12.6l1.06-1.06M11.54 4.46l1.06-1.06" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
-    );
-}
-
-function MoonIcon() {
-    return (
-        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
-            <path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    );
-}
 
 export const Main = () => {
     const { user, loading } = useAuth();
-    const { theme, toggleTheme } = useTheme();
     const { settings } = useSettings();
     const [showSample, setShowSample] = useState(false);
     const [navSection, setNavSection] = useState<NavSection | null>(null);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // D-day 카운트다운 (로그인 + 결혼식 날짜 설정 시)
     const [countdown, setCountdown] = useState<{
@@ -67,152 +46,7 @@ export const Main = () => {
     return (
         <>
             <div className="min-h-screen overflow-x-hidden bg-linear-to-b from-rose-50 via-white to-amber-50 text-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 dark:text-slate-200">
-                {/* Top nav */}
-                <header className="sticky top-0 z-10 border-b border-rose-100/60 bg-white/70 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-                        {/* 로고 */}
-                        <div className="flex items-center gap-2 shrink-0">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-rose-400 to-amber-300 shadow-sm">
-                                <svg className="h-4 w-5 text-white" viewBox="0 0 20 10" fill="none">
-                                    <circle cx="6.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.7"/>
-                                    <circle cx="13.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.7"/>
-                                </svg>
-                            </div>
-                            <span className="hidden sm:block font-semibold tracking-tight dark:text-slate-100">Wedding Plan</span>
-                        </div>
-
-                        {/* 데스크탑 네비 */}
-                        <nav className="hidden items-center gap-0.5 text-sm md:flex">
-                            {user ? (
-                                <>
-                                    {[
-                                        { to: PLAN, label: "내 플랜" },
-                                        { to: CHECKLIST, label: "체크리스트" },
-                                        { to: COMMUNITY, label: "커뮤니티" },
-                                        { to: SETTINGS, label: "설정" },
-                                    ].map(({ to, label }) => (
-                                        <NavLink
-                                            key={to}
-                                            to={to}
-                                            className={({ isActive }) =>
-                                                `rounded-xl px-3 py-2 font-medium transition-colors ${
-                                                    isActive
-                                                        ? "bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                                                }`
-                                            }
-                                        >
-                                            {label}
-                                        </NavLink>
-                                    ))}
-                                </>
-                            ) : (
-                                <Link
-                                    to={COMMUNITY}
-                                    className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-rose-600 hover:bg-rose-50 transition-colors font-medium dark:text-rose-400 dark:hover:bg-rose-900/20"
-                                >
-                                    커뮤니티
-                                </Link>
-                            )}
-                        </nav>
-
-                        {/* 오른쪽 영역 */}
-                        <div className="flex items-center gap-2">
-                            {/* 다크모드 토글 */}
-                            <button
-                                type="button"
-                                aria-label={theme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환"}
-                                onClick={toggleTheme}
-                                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-                            >
-                                {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-                            </button>
-
-                            {/* 데스크탑 전용 CTA 버튼 */}
-                            {!loading && !user ? (
-                                <Link
-                                    to={LOGIN}
-                                    className="hidden sm:block rounded-full bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
-                                >
-                                    로그인하고 시작
-                                </Link>
-                            ) : (
-                                <Link
-                                    to={PLAN}
-                                    className="hidden sm:block rounded-full bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
-                                >
-                                    내 플랜
-                                </Link>
-                            )}
-
-                            {/* UserMenu (로그인 시) */}
-                            {!loading && user && <UserMenu />}
-
-                            {/* 모바일 햄버거 */}
-                            <button
-                                type="button"
-                                aria-label="메뉴"
-                                onClick={() => setMobileMenuOpen((v) => !v)}
-                                className="flex md:hidden h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white/70 text-slate-600 hover:bg-slate-50 transition-colors dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-400 dark:hover:bg-slate-800"
-                            >
-                                {mobileMenuOpen ? (
-                                    <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
-                                        <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                                    </svg>
-                                ) : (
-                                    <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
-                                        <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                                    </svg>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* 모바일 드롭다운 메뉴 */}
-                    {mobileMenuOpen && (
-                        <div className="border-t border-slate-100 bg-white/95 backdrop-blur md:hidden dark:border-slate-700 dark:bg-slate-900/95">
-                            <div className="mx-auto max-w-6xl px-4 py-3 space-y-1">
-                                {user ? (
-                                    <>
-                                        {[
-                                            { to: PLAN, label: "내 플랜", emoji: "📋" },
-                                            { to: CHECKLIST, label: "체크리스트", emoji: "✅" },
-                                            { to: COMMUNITY, label: "커뮤니티", emoji: "💬" },
-                                            { to: SETTINGS, label: "설정", emoji: "⚙️" },
-                                        ].map(({ to, label, emoji }) => (
-                                            <Link
-                                                key={to}
-                                                to={to}
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-800"
-                                            >
-                                                {emoji} {label}
-                                            </Link>
-                                        ))}
-                                    </>
-                                ) : (
-                                    <>
-                                        <Link
-                                            to={COMMUNITY}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors dark:text-rose-400 dark:hover:bg-rose-900/20"
-                                        >
-                                            💬 커뮤니티
-                                        </Link>
-                                        <div className="my-2 h-px bg-slate-100 dark:bg-slate-700" />
-                                        <Link
-                                            to={LOGIN}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className="flex w-full items-center gap-3 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
-                                        >
-                                            로그인하고 시작
-                                        </Link>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </header>
+                <AppNav />
 
                 {/* Hero */}
                 <main>
@@ -589,8 +423,6 @@ export const Main = () => {
                     </footer>
                 </main>
             </div>
-
-            <InAppAssistant onSelect={(s) => setNavSection(s)} />
 
             {showSample && <SampleDataModal onClose={() => setShowSample(false)} />}
             {navSection && <NavSectionModal section={navSection} onClose={() => setNavSection(null)} />}

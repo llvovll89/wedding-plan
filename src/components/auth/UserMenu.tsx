@@ -1,13 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth/AuthContext";
-import { LOGIN, SETTINGS } from "../../routes/route";
+import { LOGIN, SETTINGS, ADMIN, INQUIRY } from "../../routes/route";
+
+const ADMIN_UIDS: string[] = ((import.meta.env.VITE_ADMIN_UIDS as string) ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 export function UserMenu() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+    const isAdmin = ADMIN_UIDS.length > 0 && !!user && ADMIN_UIDS.includes(user.uid);
 
     // 바깥 클릭 시 닫기
     useEffect(() => {
@@ -102,6 +108,33 @@ export function UserMenu() {
                             </svg>
                             내 설정
                         </Link>
+
+                        {isAdmin ? (
+                            <Link
+                                to={ADMIN}
+                                onClick={() => setOpen(false)}
+                                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-amber-700 hover:bg-amber-50 transition-colors dark:text-amber-400 dark:hover:bg-amber-900/20"
+                            >
+                                <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+                                    <circle cx="8" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.3" />
+                                    <path d="M2.5 13.5c0-2.485 2.462-4.5 5.5-4.5s5.5 2.015 5.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                                    <path d="M11 2l1 1-3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                관리자
+                            </Link>
+                        ) : (
+                            <Link
+                                to={INQUIRY}
+                                onClick={() => setOpen(false)}
+                                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-700"
+                            >
+                                <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+                                    <path d="M2 4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H9l-3 2v-2H3a1 1 0 0 1-1-1V4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                                    <path d="M5 7h6M5 9.5h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                                </svg>
+                                문의하기
+                            </Link>
+                        )}
 
                         <button
                             type="button"

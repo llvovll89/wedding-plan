@@ -32,7 +32,7 @@ export function Select({
                 className={[
                     "group flex w-full items-center justify-between gap-2",
                     "rounded-xl border border-slate-200 bg-white px-3.5 py-2.5",
-                    "text-sm text-slate-800 outline-none",
+                    "text-base sm:text-sm text-slate-800 outline-none",
                     "transition-all hover:border-slate-300",
                     "focus:border-rose-300 focus:ring-2 focus:ring-rose-100",
                     "data-[state=open]:border-rose-300 data-[state=open]:ring-2 data-[state=open]:ring-rose-100",

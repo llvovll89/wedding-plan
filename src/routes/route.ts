@@ -25,6 +25,8 @@ export const COMMUNITY = PATHS.COMMUNITY;
 export const CHECKLIST = PATHS.CHECKLIST;
 export const NOT_FOUND = PATHS.NOT_FOUND;
 export const SHARED = "/shared"; // 공유 플랜 (동적 경로: /shared/:shareId)
+export const ADMIN = "/admin";
+export const INQUIRY = "/inquiry";
 
 export type RoutePath = (typeof PATHS)[keyof typeof PATHS];
 

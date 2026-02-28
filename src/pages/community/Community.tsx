@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AppNav } from "../../components/layout/AppNav";
 import { useAuth } from "../../context/auth/AuthContext";
-import { getPosts, createPost, deletePost } from "../../firebase/communityService";
+import { getPosts, createPost, deletePost, uploadCommunityImages, validateCommunityImage } from "../../firebase/communityService";
 import type { CommunityPost } from "../../types/community";
 import { REGIONS } from "../../types/settings";
 import { Select } from "../../components/ui/Select";
@@ -31,7 +31,7 @@ function formatWeddingDate(d: string) {
     return `${y}년 ${m}월`;
 }
 
-const inputClass = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-rose-400/50 dark:focus:ring-rose-400/10";
+const inputClass = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-rose-400/50 dark:focus:ring-rose-400/10";
 
 // ─── 글쓰기 모달 ────────────────────────────────────────────
 function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
@@ -42,14 +42,47 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
     const [venue, setVenue] = useState("");
     const [region, setRegion] = useState("");
     const [totalCost, setTotalCost] = useState<number | "">("");
+    const [images, setImages] = useState<File[]>([]);
+    const [uploading, setUploading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+        const combined = [...images, ...files].slice(0, 3);
+        for (const f of combined) {
+            const err = validateCommunityImage(f);
+            if (err) { setError(err); return; }
+        }
+        setImages(combined);
+        e.target.value = "";
+    };
+
+    const removeImage = (index: number) => {
+        setImages((prev) => prev.filter((_, i) => i !== index));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
         if (!title.trim() || !content.trim()) { setError("제목과 내용은 필수예요."); return; }
-        setSubmitting(true); setError("");
+        setError("");
+        let imageUrls: string[] = [];
+        let imageStoragePaths: string[] = [];
+        if (images.length > 0) {
+            setUploading(true);
+            try {
+                const result = await uploadCommunityImages(user.uid, images);
+                imageUrls = result.urls;
+                imageStoragePaths = result.paths;
+            } catch {
+                setError("이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.");
+                setUploading(false);
+                return;
+            }
+            setUploading(false);
+        }
+        setSubmitting(true);
         try {
             await createPost(user, {
                 title: title.trim(),
@@ -59,6 +92,8 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
                 region,
                 totalCost: totalCost === "" ? 0 : totalCost,
                 costBreakdown: {},
+                imageUrls,
+                imageStoragePaths,
             });
             onCreated();
             onClose();
@@ -157,16 +192,60 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
                         />
                     </div>
 
+                    {/* 이미지 첨부 */}
+                    <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                            사진 첨부 <span className="text-slate-400 font-normal">(최대 3장, 5MB 이하)</span>
+                        </label>
+                        {images.length > 0 && (
+                            <div className={`mb-2 grid gap-2 ${images.length === 1 ? "grid-cols-1" : images.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+                                {images.map((file, i) => (
+                                    <div key={i} className="relative group aspect-square">
+                                        <img
+                                            src={URL.createObjectURL(file)}
+                                            alt=""
+                                            className="h-full w-full rounded-xl object-cover border border-slate-100 dark:border-slate-700"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImage(i)}
+                                            className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+                                                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {images.length < 3 && (
+                            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 hover:border-rose-300 hover:text-rose-500 transition-colors dark:border-slate-600 dark:text-slate-400">
+                                <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+                                    <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                                </svg>
+                                사진 추가 ({images.length}/3)
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="hidden"
+                                    onChange={handleImageChange}
+                                />
+                            </label>
+                        )}
+                    </div>
+
                     {error && (
                         <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400">{error}</p>
                     )}
 
                     <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitting || uploading}
                         className="w-full rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-50 transition-colors"
                     >
-                        {submitting ? "등록 중..." : "후기 등록"}
+                        {uploading ? "업로드 중..." : submitting ? "등록 중..." : "후기 등록"}
                     </button>
                 </form>
             </div>
@@ -265,6 +344,17 @@ function PostCard({
                     {expanded ? "접기" : "더보기"}
                 </button>
             )}
+
+            {/* 이미지 */}
+            {post.imageUrls.length > 0 && (
+                <div className={`mt-3 grid gap-2 ${post.imageUrls.length === 1 ? "grid-cols-1" : post.imageUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+                    {post.imageUrls.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-xl">
+                            <img src={url} alt="" className="h-full w-full object-cover hover:opacity-90 transition-opacity" />
+                        </a>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -294,7 +384,8 @@ export function Community() {
     const handleDelete = async (id: string) => {
         if (!window.confirm("이 후기를 삭제할까요?")) return;
         try {
-            await deletePost(id);
+            const post = posts.find((p) => p.id === id);
+            await deletePost(id, post?.imageStoragePaths ?? []);
             setPosts((prev) => prev.filter((p) => p.id !== id));
         } catch {
             alert("삭제에 실패했어요.");

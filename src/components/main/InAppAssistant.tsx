@@ -50,11 +50,10 @@ export function InAppAssistant({ onSelect }: Props) {
                 type="button"
                 aria-label={open ? "닫기" : "도움말 열기"}
                 onClick={() => setOpen((v) => !v)}
-                className={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-all ${
-                    open
-                        ? "bg-slate-700 hover:bg-slate-600 dark:bg-slate-600 dark:hover:bg-slate-500"
-                        : "bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500"
-                } text-white`}
+                className={`flex h-10 w-10 items-center justify-center rounded-full shadow-lg transition-all cursor-pointer ${open
+                    ? "bg-slate-700 hover:bg-slate-600 dark:bg-slate-600 dark:hover:bg-slate-500"
+                    : "bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500"
+                    } text-white`}
             >
                 {open ? (
                     <svg className="h-5 w-5" viewBox="0 0 16 16" fill="none">

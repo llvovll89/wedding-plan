@@ -235,31 +235,42 @@ export function VenueSearchModal({ onSelect, onClose }: VenueSearchModalProps) {
                     {results.length > 0 && (
                         <ul className="space-y-1">
                             {results.map((place, i) => (
-                                <li key={i}>
+                                <li key={i} className="flex items-center gap-1 rounded-xl hover:bg-rose-50 active:bg-rose-100 transition-colors dark:hover:bg-rose-900/20">
                                     <button
                                         type="button"
                                         onClick={() => { onSelect(toVenue(place)); onClose(); }}
-                                        className="w-full rounded-xl px-4 py-3 text-left hover:bg-rose-50 active:bg-rose-100 transition-colors dark:hover:bg-rose-900/20"
+                                        className="flex-1 min-w-0 px-4 py-3 text-left"
                                     >
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
-                                                {place.place_name}
+                                        <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
+                                            {place.place_name}
+                                        </p>
+                                        {(place.road_address_name || place.address_name) && (
+                                            <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">
+                                                {place.road_address_name || place.address_name}
                                             </p>
-                                            {(place.road_address_name || place.address_name) && (
-                                                <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">
-                                                    {place.road_address_name || place.address_name}
-                                                </p>
+                                        )}
+                                        <div className="mt-0.5 flex items-center gap-2">
+                                            {place.phone && (
+                                                <p className="text-xs text-slate-400 dark:text-slate-500">{place.phone}</p>
                                             )}
-                                            <div className="mt-0.5 flex items-center gap-2">
-                                                {place.phone && (
-                                                    <p className="text-xs text-slate-400 dark:text-slate-500">{place.phone}</p>
-                                                )}
-                                                {place.category_name && (
-                                                    <p className="truncate text-xs text-slate-300 dark:text-slate-600">{place.category_name}</p>
-                                                )}
-                                            </div>
                                         </div>
                                     </button>
+                                    {place.place_url && (
+                                        <a
+                                            href={place.place_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="shrink-0 mr-2 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-100 hover:text-rose-600 transition-colors dark:text-slate-500 dark:hover:bg-rose-900/30 dark:hover:text-rose-400"
+                                            title="카카오맵에서 보기"
+                                        >
+                                            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+                                                <path d="M6.5 3H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                                                <path d="M9.5 2H14v4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                                                <path d="M14 2L8 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                                            </svg>
+                                        </a>
+                                    )}
                                 </li>
                             ))}
                         </ul>

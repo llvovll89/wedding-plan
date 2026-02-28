@@ -43,6 +43,7 @@ export const Login = () => {
     const [mode, setMode] = useState<Mode>("login");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [verificationSent, setVerificationSent] = useState(false);
@@ -53,6 +54,7 @@ export const Login = () => {
         if (mode === "signup") {
             const pwError = validatePassword(password);
             if (pwError) { setError(pwError); return; }
+            if (password !== confirmPassword) { setError("비밀번호가 일치하지 않습니다."); return; }
         }
         setIsLoading(true);
         try {
@@ -86,6 +88,7 @@ export const Login = () => {
     const toggleMode = () => {
         setMode((prev) => (prev === "login" ? "signup" : "login"));
         setError("");
+        setConfirmPassword("");
     };
 
     if (verificationSent) {
@@ -177,7 +180,7 @@ export const Login = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="example@email.com"
-                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base sm:text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
                         />
                     </div>
 
@@ -193,7 +196,7 @@ export const Login = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder={mode === "signup" ? "8자 이상 입력해주세요" : "비밀번호 입력"}
-                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base sm:text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
                         />
                         {mode === "signup" && (
                             <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
@@ -201,6 +204,24 @@ export const Login = () => {
                             </p>
                         )}
                     </div>
+
+                    {mode === "signup" && (
+                        <div>
+                            <label htmlFor="confirmPassword" className="block text-xs font-medium text-slate-600 mb-1 dark:text-slate-400">
+                                비밀번호 확인
+                            </label>
+                            <input
+                                id="confirmPassword"
+                                type="password"
+                                autoComplete="new-password"
+                                required
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="비밀번호를 다시 입력해주세요"
+                                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base sm:text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-slate-400 dark:focus:ring-slate-400"
+                            />
+                        </div>
+                    )}
 
                     {/* 에러 메시지 */}
                     {error && (

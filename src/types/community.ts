@@ -18,6 +18,10 @@ export interface CommunityPost {
     // 카테고리별 비용 (선택)
     costBreakdown: Partial<Record<PlanCategory, number>>;
 
+    // 이미지 첨부 (최대 3장)
+    imageUrls: string[];          // 다운로드 URL 목록
+    imageStoragePaths: string[];  // 삭제용 Storage 경로 목록
+
     createdAt: string;     // ISO
 }
 
