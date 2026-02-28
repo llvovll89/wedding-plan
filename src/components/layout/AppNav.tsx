@@ -97,9 +97,10 @@ export function AppNav() {
                     to={MAIN}
                     className="flex shrink-0 items-center gap-2 mr-1"
                 >
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-linear-to-br from-rose-300 to-amber-200 shadow-sm">
-                        <svg className="h-3.5 w-3.5 text-white" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M8 14s-6-3.9-6-8a6 6 0 0 1 12 0c0 4.1-6 8-6 8z" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-linear-to-br from-rose-400 to-amber-300 shadow-sm">
+                        <svg className="h-3 w-4 text-white" viewBox="0 0 20 10" fill="none">
+                            <circle cx="6.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9"/>
+                            <circle cx="13.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9"/>
                         </svg>
                     </div>
                     <span className="hidden font-semibold tracking-tight text-sm text-slate-800 sm:block dark:text-slate-200">

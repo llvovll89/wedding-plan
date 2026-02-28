@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { LOGIN, PLAN, COMMUNITY } from "../../routes/route";
+import { Link, NavLink } from "react-router-dom";
+import { LOGIN, PLAN, COMMUNITY, CHECKLIST, SETTINGS } from "../../routes/route";
 import { useAuth } from "../../context/auth/AuthContext";
 import { useTheme } from "../../context/theme/ThemeContext";
 import { useSettings } from "../../context/settings/SettingsContext";
@@ -72,21 +72,48 @@ export const Main = () => {
                     <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
                         {/* 로고 */}
                         <div className="flex items-center gap-2 shrink-0">
-                            <div className="h-8 w-8 shrink-0 rounded-full bg-linear-to-br from-rose-300 to-amber-200 shadow-sm" />
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-rose-400 to-amber-300 shadow-sm">
+                                <svg className="h-4 w-5 text-white" viewBox="0 0 20 10" fill="none">
+                                    <circle cx="6.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.7"/>
+                                    <circle cx="13.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.7"/>
+                                </svg>
+                            </div>
                             <span className="hidden sm:block font-semibold tracking-tight dark:text-slate-100">Wedding Plan</span>
                         </div>
 
                         {/* 데스크탑 네비 */}
-                        <nav className="hidden items-center gap-1 text-sm text-slate-600 md:flex dark:text-slate-400">
-                            <Link
-                                to={COMMUNITY}
-                                className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-rose-600 hover:bg-rose-50 transition-colors font-medium dark:text-rose-400 dark:hover:bg-rose-900/20"
-                            >
-                                <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none">
-                                    <path d="M2 4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H9l-3 2v-2H3a1 1 0 0 1-1-1V4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                                </svg>
-                                커뮤니티
-                            </Link>
+                        <nav className="hidden items-center gap-0.5 text-sm md:flex">
+                            {user ? (
+                                <>
+                                    {[
+                                        { to: PLAN, label: "내 플랜" },
+                                        { to: CHECKLIST, label: "체크리스트" },
+                                        { to: COMMUNITY, label: "커뮤니티" },
+                                        { to: SETTINGS, label: "설정" },
+                                    ].map(({ to, label }) => (
+                                        <NavLink
+                                            key={to}
+                                            to={to}
+                                            className={({ isActive }) =>
+                                                `rounded-xl px-3 py-2 font-medium transition-colors ${
+                                                    isActive
+                                                        ? "bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                }`
+                                            }
+                                        >
+                                            {label}
+                                        </NavLink>
+                                    ))}
+                                </>
+                            ) : (
+                                <Link
+                                    to={COMMUNITY}
+                                    className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-rose-600 hover:bg-rose-50 transition-colors font-medium dark:text-rose-400 dark:hover:bg-rose-900/20"
+                                >
+                                    커뮤니티
+                                </Link>
+                            )}
                         </nav>
 
                         {/* 오른쪽 영역 */}
@@ -145,30 +172,42 @@ export const Main = () => {
                     {mobileMenuOpen && (
                         <div className="border-t border-slate-100 bg-white/95 backdrop-blur md:hidden dark:border-slate-700 dark:bg-slate-900/95">
                             <div className="mx-auto max-w-6xl px-4 py-3 space-y-1">
-                                <Link
-                                    to={COMMUNITY}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors dark:text-rose-400 dark:hover:bg-rose-900/20"
-                                >
-                                    💬 커뮤니티
-                                </Link>
-                                <div className="my-2 h-px bg-slate-100 dark:bg-slate-700" />
-                                {!loading && !user ? (
-                                    <Link
-                                        to={LOGIN}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex w-full items-center gap-3 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
-                                    >
-                                        로그인하고 시작
-                                    </Link>
+                                {user ? (
+                                    <>
+                                        {[
+                                            { to: PLAN, label: "내 플랜", emoji: "📋" },
+                                            { to: CHECKLIST, label: "체크리스트", emoji: "✅" },
+                                            { to: COMMUNITY, label: "커뮤니티", emoji: "💬" },
+                                            { to: SETTINGS, label: "설정", emoji: "⚙️" },
+                                        ].map(({ to, label, emoji }) => (
+                                            <Link
+                                                key={to}
+                                                to={to}
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-800"
+                                            >
+                                                {emoji} {label}
+                                            </Link>
+                                        ))}
+                                    </>
                                 ) : (
-                                    <Link
-                                        to={PLAN}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex w-full items-center gap-3 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
-                                    >
-                                        📋 내 플랜 바로가기
-                                    </Link>
+                                    <>
+                                        <Link
+                                            to={COMMUNITY}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors dark:text-rose-400 dark:hover:bg-rose-900/20"
+                                        >
+                                            💬 커뮤니티
+                                        </Link>
+                                        <div className="my-2 h-px bg-slate-100 dark:bg-slate-700" />
+                                        <Link
+                                            to={LOGIN}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex w-full items-center gap-3 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
+                                        >
+                                            로그인하고 시작
+                                        </Link>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -534,7 +573,12 @@ export const Main = () => {
                         <div className="mx-auto max-w-6xl px-4 py-10 text-sm text-slate-600 dark:text-slate-400">
                             <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
                                 <div className="flex items-center gap-2">
-                                    <div className="h-6 w-6 rounded-full bg-linear-to-br from-rose-300 to-amber-200" />
+                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-rose-400 to-amber-300">
+                                        <svg className="h-3 w-4 text-white" viewBox="0 0 20 10" fill="none">
+                                            <circle cx="6.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9"/>
+                                            <circle cx="13.5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1.9"/>
+                                        </svg>
+                                    </div>
                                     <span className="font-medium text-slate-800 dark:text-slate-200">Wedding Plan</span>
                                 </div>
                                 <div className="text-xs">

@@ -310,8 +310,8 @@ export const Plan = () => {
                             type="button"
                             onClick={() => setPlanTab("plan")}
                             className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${planTab === "plan"
-                                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                                 }`}
                         >
                             견적·일정
@@ -320,8 +320,8 @@ export const Plan = () => {
                             type="button"
                             onClick={() => setPlanTab("style")}
                             className={`flex-1 rounded-xl py-2 text-sm font-medium transition-colors ${planTab === "style"
-                                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                                 }`}
                         >
                             스타일 레퍼런스
@@ -813,8 +813,8 @@ export const Plan = () => {
                                 type="button"
                                 onClick={handleCopy}
                                 className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-colors ${copied
-                                        ? "bg-emerald-500 text-white"
-                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                    ? "bg-emerald-500 text-white"
+                                    : "bg-blue-600 text-white hover:bg-blue-700"
                                     }`}
                             >
                                 {copied ? "복사됨!" : "링크 복사"}

@@ -10,25 +10,32 @@ interface KakaoPlace {
     place_url: string;
 }
 
+interface KakaoResponse {
+    documents: KakaoPlace[];
+    meta: { is_end: boolean; total_count: number };
+}
+
 interface VenueSearchModalProps {
     onSelect: (venue: Venue) => void;
     onClose: () => void;
 }
 
 const API_KEY = import.meta.env.VITE_KAKAO_API_KEY as string | undefined;
+const PAGE_SIZE = 15;
+
+const REGION_MAP: Record<string, string> = {
+    서울특별시: "서울", 부산광역시: "부산", 대구광역시: "대구",
+    인천광역시: "인천", 광주광역시: "광주", 대전광역시: "대전",
+    울산광역시: "울산", 세종특별자치시: "세종",
+    경기도: "경기", 강원도: "강원", 강원특별자치도: "강원",
+    충청북도: "충북", 충청남도: "충남",
+    전라북도: "전북", 전북특별자치도: "전북", 전라남도: "전남",
+    경상북도: "경북", 경상남도: "경남", 제주특별자치도: "제주",
+};
 
 function toVenue(place: KakaoPlace): Venue {
     const address = place.road_address_name || place.address_name;
     const regionWord = address.trim().split(/\s+/)[0] ?? "";
-    const REGION_MAP: Record<string, string> = {
-        서울특별시: "서울", 부산광역시: "부산", 대구광역시: "대구",
-        인천광역시: "인천", 광주광역시: "광주", 대전광역시: "대전",
-        울산광역시: "울산", 세종특별자치시: "세종",
-        경기도: "경기", 강원도: "강원", 강원특별자치도: "강원",
-        충청북도: "충북", 충청남도: "충남",
-        전라북도: "전북", 전북특별자치도: "전북", 전라남도: "전남",
-        경상북도: "경북", 경상남도: "경남", 제주특별자치도: "제주",
-    };
     return {
         name: place.place_name,
         address,
@@ -37,13 +44,38 @@ function toVenue(place: KakaoPlace): Venue {
     };
 }
 
+async function fetchPlaces(q: string, page: number): Promise<KakaoResponse> {
+    const res = await fetch(
+        `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&size=${PAGE_SIZE}&page=${page}`,
+        { headers: { Authorization: `KakaoAK ${API_KEY}` } },
+    );
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json() as Promise<KakaoResponse>;
+}
+
 export function VenueSearchModal({ onSelect, onClose }: VenueSearchModalProps) {
     const [query, setQuery] = useState("예식장");
     const [results, setResults] = useState<KakaoPlace[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [isEnd, setIsEnd] = useState(true);
     const [error, setError] = useState("");
+
     const inputRef = useRef<HTMLInputElement>(null);
+    const sentinelRef = useRef<HTMLDivElement>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+    // refs로 IntersectionObserver 내부의 stale closure 방지
+    const queryRef = useRef(query);
+    const pageRef = useRef(1);
+    const loadingRef = useRef(false);
+    const loadingMoreRef = useRef(false);
+    const isEndRef = useRef(true);
+
+    useEffect(() => { queryRef.current = query; }, [query]);
+    useEffect(() => { loadingRef.current = loading; }, [loading]);
+    useEffect(() => { loadingMoreRef.current = loadingMore; }, [loadingMore]);
+    useEffect(() => { isEndRef.current = isEnd; }, [isEnd]);
 
     useEffect(() => {
         inputRef.current?.focus();
@@ -53,39 +85,72 @@ export function VenueSearchModal({ onSelect, onClose }: VenueSearchModalProps) {
         return () => window.removeEventListener("keydown", onKey);
     }, [onClose]);
 
-    const search = useCallback(async (q: string) => {
-        if (!q.trim() || q.trim().length < 2) { setResults([]); return; }
+    const doSearch = useCallback(async (q: string) => {
+        if (!q.trim() || q.trim().length < 2) {
+            setResults([]);
+            setIsEnd(true);
+            isEndRef.current = true;
+            return;
+        }
+        loadingRef.current = true;
         setLoading(true);
         setError("");
+        setResults([]);
+        setIsEnd(true);
+        isEndRef.current = true;
         try {
-            const res = await fetch(
-                `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&size=15`,
-                { headers: { Authorization: `KakaoAK ${API_KEY}` } },
-            );
-            if (!res.ok) throw new Error(`${res.status}`);
-            const data = await res.json() as { documents: KakaoPlace[] };
+            const data = await fetchPlaces(q, 1);
             setResults(data.documents ?? []);
+            setIsEnd(data.meta.is_end);
+            isEndRef.current = data.meta.is_end;
+            pageRef.current = 2;
         } catch {
             setError("검색 중 오류가 발생했어요. API 키를 확인해 주세요.");
-            setResults([]);
         } finally {
+            loadingRef.current = false;
             setLoading(false);
+        }
+    }, []);
+
+    const doLoadMore = useCallback(async () => {
+        if (loadingRef.current || loadingMoreRef.current || isEndRef.current) return;
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+        try {
+            const data = await fetchPlaces(queryRef.current, pageRef.current);
+            setResults((prev) => [...prev, ...(data.documents ?? [])]);
+            setIsEnd(data.meta.is_end);
+            isEndRef.current = data.meta.is_end;
+            pageRef.current += 1;
+        } catch {
+            // load-more 실패는 조용히 무시
+        } finally {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
         }
     }, []);
 
     useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => { void search(query); }, 500);
+        debounceRef.current = setTimeout(() => { void doSearch(query); }, 500);
         return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-    }, [query, search]);
+    }, [query, doSearch]);
 
-    // API 키 미설정
+    // sentinel이 보이면 다음 페이지 로드
+    useEffect(() => {
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+        const observer = new IntersectionObserver(
+            (entries) => { if (entries[0].isIntersecting) void doLoadMore(); },
+            { threshold: 0.1 },
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [doLoadMore]);
+
     if (!API_KEY) {
         return (
-            <div
-                className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm"
-                onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-            >
+            <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm">
                 <div className="w-full sm:w-[440px] flex flex-col rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl dark:bg-slate-800">
                     <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-100 dark:border-slate-700">
                         <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">예식장 검색</h2>
@@ -98,28 +163,10 @@ export function VenueSearchModal({ onSelect, onClose }: VenueSearchModalProps) {
                             <span className="text-xl">🔑</span>
                             <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">카카오 API 키 설정이 필요해요</p>
                         </div>
-                        <ol className="space-y-2.5 text-sm text-slate-600 dark:text-slate-400">
-                            <li className="flex gap-2.5">
-                                <span className="shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-300 text-xs font-bold">1</span>
-                                <span><a href="https://developers.kakao.com" target="_blank" rel="noopener noreferrer" className="text-rose-500 underline underline-offset-2">developers.kakao.com</a> 접속 → 로그인 → 내 애플리케이션 → 애플리케이션 추가</span>
-                            </li>
-                            <li className="flex gap-2.5">
-                                <span className="shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-300 text-xs font-bold">2</span>
-                                <span>앱 키 → <strong className="text-slate-700 dark:text-slate-300">REST API 키</strong> 복사</span>
-                            </li>
-                            <li className="flex gap-2.5">
-                                <span className="shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-300 text-xs font-bold">3</span>
-                                <span><code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-mono text-xs text-slate-700 dark:text-slate-300">.env</code> 파일에 아래 줄 추가 후 서버 재시작</span>
-                            </li>
-                        </ol>
                         <div className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-mono text-emerald-400">
                             VITE_KAKAO_API_KEY=<span className="text-slate-400">여기에_REST_API_키_붙여넣기</span>
                         </div>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="w-full rounded-xl border border-slate-200 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700"
-                        >
+                        <button type="button" onClick={onClose} className="w-full rounded-xl border border-slate-200 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700">
                             닫기
                         </button>
                     </div>
@@ -129,10 +176,7 @@ export function VenueSearchModal({ onSelect, onClose }: VenueSearchModalProps) {
     }
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm"
-            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-        >
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm">
             <div className="w-full sm:w-[480px] max-h-[85vh] flex flex-col rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl dark:bg-slate-800">
                 {/* 헤더 */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-100 dark:border-slate-700">
@@ -170,29 +214,23 @@ export function VenueSearchModal({ onSelect, onClose }: VenueSearchModalProps) {
                             className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-rose-400/50 dark:focus:ring-rose-400/10"
                         />
                     </div>
-                    {error && (
-                        <p className="mt-1.5 text-xs text-rose-500 dark:text-rose-400">{error}</p>
-                    )}
+                    {error && <p className="mt-1.5 text-xs text-rose-500 dark:text-rose-400">{error}</p>}
                 </div>
 
                 {/* 결과 수 */}
                 {results.length > 0 && (
                     <p className="px-5 pb-1 text-xs text-slate-400 dark:text-slate-500">
-                        {results.length}개 검색됨 · 카카오맵 기준
+                        {results.length}개 로드됨 · 카카오맵 기준
                     </p>
                 )}
 
                 {/* 결과 목록 */}
                 <div className="overflow-y-auto flex-1 px-3 pb-4">
                     {!loading && results.length === 0 && query.trim().length >= 2 && !error && (
-                        <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-                            검색 결과가 없어요
-                        </div>
+                        <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">검색 결과가 없어요</div>
                     )}
                     {!loading && query.trim().length < 2 && (
-                        <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-                            검색어를 입력하세요
-                        </div>
+                        <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">검색어를 입력하세요</div>
                     )}
                     {results.length > 0 && (
                         <ul className="space-y-1">
@@ -203,30 +241,46 @@ export function VenueSearchModal({ onSelect, onClose }: VenueSearchModalProps) {
                                         onClick={() => { onSelect(toVenue(place)); onClose(); }}
                                         className="w-full rounded-xl px-4 py-3 text-left hover:bg-rose-50 active:bg-rose-100 transition-colors dark:hover:bg-rose-900/20"
                                     >
-                                        <div className="flex items-start gap-2">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
-                                                    {place.place_name}
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
+                                                {place.place_name}
+                                            </p>
+                                            {(place.road_address_name || place.address_name) && (
+                                                <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">
+                                                    {place.road_address_name || place.address_name}
                                                 </p>
-                                                {(place.road_address_name || place.address_name) && (
-                                                    <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">
-                                                        {place.road_address_name || place.address_name}
-                                                    </p>
+                                            )}
+                                            <div className="mt-0.5 flex items-center gap-2">
+                                                {place.phone && (
+                                                    <p className="text-xs text-slate-400 dark:text-slate-500">{place.phone}</p>
                                                 )}
-                                                <div className="mt-0.5 flex items-center gap-2">
-                                                    {place.phone && (
-                                                        <p className="text-xs text-slate-400 dark:text-slate-500">{place.phone}</p>
-                                                    )}
-                                                    {place.category_name && (
-                                                        <p className="truncate text-xs text-slate-300 dark:text-slate-600">{place.category_name}</p>
-                                                    )}
-                                                </div>
+                                                {place.category_name && (
+                                                    <p className="truncate text-xs text-slate-300 dark:text-slate-600">{place.category_name}</p>
+                                                )}
                                             </div>
                                         </div>
                                     </button>
                                 </li>
                             ))}
                         </ul>
+                    )}
+
+                    {/* 무한스크롤 sentinel */}
+                    <div ref={sentinelRef} className="h-1" />
+
+                    {/* 추가 로딩 인디케이터 */}
+                    {loadingMore && (
+                        <div className="flex justify-center py-3">
+                            <svg className="h-5 w-5 animate-spin text-rose-400" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="60" strokeDashoffset="20" />
+                            </svg>
+                        </div>
+                    )}
+                    {!loading && !loadingMore && !isEnd && results.length > 0 && (
+                        <p className="py-2 text-center text-xs text-slate-300 dark:text-slate-600">스크롤하여 더 보기</p>
+                    )}
+                    {!loading && isEnd && results.length > 0 && (
+                        <p className="py-3 text-center text-xs text-slate-300 dark:text-slate-600">모든 결과를 불러왔어요</p>
                     )}
                 </div>
 
