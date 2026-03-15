@@ -9,7 +9,9 @@ import type { PlanCategory, PlanStatus } from "../../types/plan";
 
 const CATEGORY_LABEL: Record<PlanCategory, string> = {
     sdeume: "스드메", venue: "예식장", studio: "웨딩촬영",
-    snapshot: "스냅", mc: "사회자", honeymoon: "신혼여행", etc: "기타",
+    snapshot: "스냅", mc: "사회자", honeymoon: "신혼여행",
+    invitation: "청첩장", gift: "예물/예단", hanbok: "한복/예복",
+    favor: "답례품", ceremony: "폐백/이바지", newhome: "신혼집", etc: "기타",
 };
 const STATUS_LABEL: Record<PlanStatus, string> = {
     planned: "예정", in_progress: "진행중", confirmed: "확정", paid: "결제완료",

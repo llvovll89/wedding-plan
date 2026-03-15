@@ -66,6 +66,12 @@ const ALL_CATEGORIES: PlanCategory[] = [
     "snapshot",
     "mc",
     "honeymoon",
+    "invitation",
+    "gift",
+    "hanbok",
+    "favor",
+    "ceremony",
+    "newhome",
     "etc",
 ];
 

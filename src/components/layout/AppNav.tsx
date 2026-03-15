@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { UserMenu } from "../auth/UserMenu";
-import { MAIN, PLAN, SETTINGS, COMMUNITY, CHECKLIST } from "../../routes/route";
+import { MAIN, PLAN, SETTINGS, COMMUNITY, CHECKLIST, GIFT_LEDGER, GUESTS } from "../../routes/route";
 import { useSettings } from "../../context/settings/SettingsContext";
 import { useTheme } from "../../context/theme/ThemeContext";
 import { NavSectionModal, type NavSection } from "../main/NavSectionModal";
@@ -22,6 +22,29 @@ function ChecklistIcon() {
             <path d="M2.5 4.5l1 1 2-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M2.5 8.5l1 1 2-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             <circle cx="3.5" cy="12.5" r="1" stroke="currentColor" strokeWidth="1.2" />
+        </svg>
+    );
+}
+
+function GuestsIcon() {
+    return (
+        <svg className="h-4 w-4 shrink-0" viewBox="0 0 16 16" fill="none">
+            <circle cx="6" cy="5" r="2.3" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M1.5 13.5C1.5 11.07 3.57 9 6 9s4.5 2.07 4.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M11 7.5a2 2 0 1 0 0-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M13 13c0-1.66-.9-3.1-2.2-3.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+function GiftLedgerIcon() {
+    return (
+        <svg className="h-4 w-4 shrink-0" viewBox="0 0 16 16" fill="none">
+            <rect x="1.5" y="6" width="13" height="8.5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M1.5 9h13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M8 6V14.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M8 6C8 6 5.5 5.5 5 4c-.5-1.5 1-2.5 2-1.5.5.5.75 1.5 1 3z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M8 6C8 6 10.5 5.5 11 4c.5-1.5-1-2.5-2-1.5-.5.5-.75 1.5-1 3z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 }
@@ -142,6 +165,8 @@ export function AppNav() {
     const navItems = [
         { to: PLAN, label: "내 플랜", icon: <PlanIcon /> },
         { to: CHECKLIST, label: "체크리스트", icon: <ChecklistIcon /> },
+        { to: GUESTS, label: "게스트", icon: <GuestsIcon /> },
+        { to: GIFT_LEDGER, label: "축의금", icon: <GiftLedgerIcon /> },
         { to: COMMUNITY, label: "커뮤니티", icon: <CommunityIcon /> },
         { to: SETTINGS, label: "설정", icon: <SettingsIcon /> },
     ];

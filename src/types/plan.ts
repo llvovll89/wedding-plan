@@ -7,6 +7,12 @@ export type PlanCategory =
     | "snapshot"
     | "mc"
     | "honeymoon"
+    | "invitation"
+    | "gift"
+    | "hanbok"
+    | "favor"
+    | "ceremony"
+    | "newhome"
     | "etc";
 
 export type Money = number; // KRW: 정수(원)로 저장 권장

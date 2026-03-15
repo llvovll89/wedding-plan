@@ -42,6 +42,7 @@ export const SettingsPage = () => {
     const [weddingDate, setWeddingDate] = useState(settings.weddingDate);
     const [region, setRegion] = useState(settings.region);
     const [guestCount, setGuestCount] = useState<number | "">(settings.guestCount || "");
+    const [mealCostPerPerson, setMealCostPerPerson] = useState<number | "">(settings.mealCostPerPerson || "");
     const [totalBudget, setTotalBudget] = useState<number | "">(settings.totalBudget || "");
     const [saved, setSaved] = useState(false);
 
@@ -52,6 +53,7 @@ export const SettingsPage = () => {
         setWeddingDate(settings.weddingDate);
         setRegion(settings.region);
         setGuestCount(settings.guestCount || "");
+        setMealCostPerPerson(settings.mealCostPerPerson || "");
         setTotalBudget(settings.totalBudget || "");
     }, [settings]);
 
@@ -62,6 +64,7 @@ export const SettingsPage = () => {
             weddingDate,
             region,
             guestCount: guestCount === "" ? 0 : guestCount,
+            mealCostPerPerson: mealCostPerPerson === "" ? 0 : mealCostPerPerson,
             totalBudget: totalBudget === "" ? 0 : totalBudget,
         });
         setSaved(true);
@@ -173,7 +176,7 @@ export const SettingsPage = () => {
                             desc="플랜 항목의 예상 비용을 총 예산에서 차감해 보여줘요."
                         />
 
-                        <div>
+                        <div className="mb-3">
                             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">결혼 총 예산</label>
                             <div className="relative">
                                 <input
@@ -191,6 +194,23 @@ export const SettingsPage = () => {
                                     = <span className="font-semibold text-slate-700 dark:text-slate-300">{formatKRW(totalBudget)}</span>
                                 </p>
                             )}
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                                1인 식대
+                                <span className="ml-1 font-normal text-slate-400 dark:text-slate-500">(게스트 리스트 식대 계산에 사용)</span>
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="65,000"
+                                    className={`${inputClass} pr-8`}
+                                    value={toDisplay(mealCostPerPerson)}
+                                    onChange={(e) => setMealCostPerPerson(parseInput(e.target.value))}
+                                />
+                                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500">원</span>
+                            </div>
                         </div>
                     </div>
                 </div>

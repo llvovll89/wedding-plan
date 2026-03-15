@@ -1,13 +1,14 @@
 export interface Settings {
     // 예산
-    totalBudget: number;       // 결혼 총 예산 (KRW), 0 = 미설정
+    totalBudget: number;          // 결혼 총 예산 (KRW), 0 = 미설정
 
     // 결혼 정보
-    weddingDate: string;       // YYYY-MM-DD, "" = 미설정
+    weddingDate: string;          // YYYY-MM-DD, "" = 미설정
     groomName: string;
     brideName: string;
-    region: string;            // 예식 지역
-    guestCount: number;        // 예상 하객 수, 0 = 미설정
+    region: string;               // 예식 지역
+    guestCount: number;           // 예상 하객 수, 0 = 미설정
+    mealCostPerPerson: number;    // 1인 식대 (KRW), 0 = 미설정
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,6 +18,7 @@ export const DEFAULT_SETTINGS: Settings = {
     brideName: "",
     region: "",
     guestCount: 0,
+    mealCostPerPerson: 0,
 };
 
 export const REGIONS = [

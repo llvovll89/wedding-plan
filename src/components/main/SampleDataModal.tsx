@@ -8,6 +8,12 @@ const CATEGORY_LABEL: Record<PlanCategory, string> = {
     snapshot: "스냅",
     mc: "사회자",
     honeymoon: "신혼여행",
+    invitation: "청첩장",
+    gift: "예물/예단",
+    hanbok: "한복/예복",
+    favor: "답례품",
+    ceremony: "폐백/이바지",
+    newhome: "신혼집",
     etc: "기타",
 };
 

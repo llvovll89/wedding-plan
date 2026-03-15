@@ -11,6 +11,7 @@ import { createShare } from "../../firebase/shareService";
 import { VenueSearchModal } from "../../components/venue/VenueSearchModal";
 import type { Venue } from "../../types/venue";
 import { StyleGallery } from "../../components/plan/StyleGallery";
+import { BudgetChart } from "../../components/plan/BudgetChart";
 
 type PlanTab = "plan" | "style";
 
@@ -21,6 +22,12 @@ const CATEGORY_LABEL: Record<PlanCategory, string> = {
     snapshot: "스냅",
     mc: "사회자",
     honeymoon: "신혼여행",
+    invitation: "청첩장",
+    gift: "예물/예단",
+    hanbok: "한복/예복",
+    favor: "답례품",
+    ceremony: "폐백/이바지",
+    newhome: "신혼집",
     etc: "기타",
 };
 
@@ -394,6 +401,15 @@ export const Plan = () => {
                                     <p className="text-base font-bold text-rose-600 dark:text-rose-300">{formatKRW(totalBalance)}</p>
                                 </div>
                             </div>
+                        )}
+
+                        {/* 예산 분석 차트 */}
+                        {state.items.length > 0 && (
+                            <BudgetChart
+                                byCategory={selectors.byCategory}
+                                totalBudget={totalBudget}
+                                totalSpent={selectors.total}
+                            />
                         )}
 
                         {/* 항목 추가 폼 */}
