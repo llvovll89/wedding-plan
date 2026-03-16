@@ -5,12 +5,12 @@ import { AuthProvider } from "./context/auth/AuthContext";
 import { SettingsProvider } from "./context/settings/SettingsContext";
 import { ThemeProvider } from "./context/theme/ThemeContext";
 import { ProtectedRoute } from "./components/routing/ProtectedRoute";
-import { PLAN, SETTINGS, CHECKLIST, ADMIN, INQUIRY, GIFT_LEDGER, GUESTS } from "./routes/route";
+import { PLAN, SETTINGS, CHECKLIST, ADMIN, INQUIRY, GIFT_LEDGER, GUESTS, INVITATION } from "./routes/route";
 import { SharedPlan } from "./pages/shared/SharedPlan";
 import { AdminPage } from "./pages/admin/AdminPage";
 import { InquiryPage } from "./pages/inquiry/InquiryPage";
 
-const PROTECTED_PATHS: string[] = [PLAN, SETTINGS, CHECKLIST, INQUIRY, GIFT_LEDGER, GUESTS]; // Community는 읽기는 공개
+const PROTECTED_PATHS: string[] = [PLAN, SETTINGS, CHECKLIST, INQUIRY, GIFT_LEDGER, GUESTS, INVITATION]; // Community는 읽기는 공개
 
 function App() {
   return (

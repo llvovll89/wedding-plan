@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { UserMenu } from "../auth/UserMenu";
-import { MAIN, PLAN, SETTINGS, COMMUNITY, CHECKLIST, GIFT_LEDGER, GUESTS } from "../../routes/route";
+import { MAIN, PLAN, SETTINGS, COMMUNITY, CHECKLIST, GIFT_LEDGER, GUESTS, INVITATION } from "../../routes/route";
 import { useSettings } from "../../context/settings/SettingsContext";
 import { useTheme } from "../../context/theme/ThemeContext";
 import { NavSectionModal, type NavSection } from "../main/NavSectionModal";
@@ -33,6 +33,15 @@ function GuestsIcon() {
             <path d="M1.5 13.5C1.5 11.07 3.57 9 6 9s4.5 2.07 4.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
             <path d="M11 7.5a2 2 0 1 0 0-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
             <path d="M13 13c0-1.66-.9-3.1-2.2-3.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+function InvitationIcon() {
+    return (
+        <svg className="h-4 w-4 shrink-0" viewBox="0 0 16 16" fill="none">
+            <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M1.5 5.5l6.5 4 6.5-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 }
@@ -167,6 +176,7 @@ export function AppNav() {
         { to: CHECKLIST, label: "체크리스트", icon: <ChecklistIcon /> },
         { to: GUESTS, label: "게스트", icon: <GuestsIcon /> },
         { to: GIFT_LEDGER, label: "축의금", icon: <GiftLedgerIcon /> },
+        { to: INVITATION, label: "청첩장", icon: <InvitationIcon /> },
         { to: COMMUNITY, label: "커뮤니티", icon: <CommunityIcon /> },
         { to: SETTINGS, label: "설정", icon: <SettingsIcon /> },
     ];

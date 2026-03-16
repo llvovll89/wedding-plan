@@ -8,6 +8,7 @@ import { Community } from "../pages/community/Community";
 import { Checklist } from "../pages/checklist/Checklist";
 import { GiftLedger } from "../pages/giftLedger/GiftLedger";
 import { Guests } from "../pages/guests/Guests";
+import { Invitation } from "../pages/invitation/Invitation";
 
 export const PATHS = {
     MAIN: "/",
@@ -18,6 +19,7 @@ export const PATHS = {
     CHECKLIST: "/checklist",
     GIFT_LEDGER: "/gift-ledger",
     GUESTS: "/guests",
+    INVITATION: "/invitation",
     NOT_FOUND: "*",
 } as const;
 
@@ -29,6 +31,7 @@ export const COMMUNITY = PATHS.COMMUNITY;
 export const CHECKLIST = PATHS.CHECKLIST;
 export const GIFT_LEDGER = PATHS.GIFT_LEDGER;
 export const GUESTS = PATHS.GUESTS;
+export const INVITATION = PATHS.INVITATION;
 export const NOT_FOUND = PATHS.NOT_FOUND;
 export const SHARED = "/shared"; // 공유 플랜 (동적 경로: /shared/:shareId)
 export const ADMIN = "/admin";
@@ -52,5 +55,6 @@ export const routesPath = [
     { path: PATHS.CHECKLIST, name: "Checklist", icon: "", component: Checklist },
     { path: PATHS.GIFT_LEDGER, name: "GiftLedger", icon: "", component: GiftLedger },
     { path: PATHS.GUESTS, name: "Guests", icon: "", component: Guests },
+    { path: PATHS.INVITATION, name: "Invitation", icon: "", component: Invitation },
     { path: PATHS.NOT_FOUND, name: "Not Found", icon: "", component: NotFound },
 ] satisfies ReadonlyArray<AppRoute>;
